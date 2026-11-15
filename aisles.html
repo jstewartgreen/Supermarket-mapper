@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kroger Aisle Mapper</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="aisles.css">
+</head>
+<body class="aisles-page">
+  <aside id="panel">
+    <h1>Kroger Aisle Mapper</h1>
+    <p class="sub">Aisle-by-aisle directory for Kroger-family stores (Kroger, Ralphs, Fred Meyer, King Soopers, Harris Teeter…). <a href="index.html">← Store map</a></p>
+
+    <form id="findStores">
+      <div class="row">
+        <label>ZIP code
+          <input id="zip" type="text" inputmode="numeric" pattern="\d{5}" maxlength="5" placeholder="45202" required>
+        </label>
+        <label>Within (mi)
+          <input id="radius" type="number" min="1" max="100" value="10">
+        </label>
+      </div>
+      <button type="submit">Find stores</button>
+    </form>
+
+    <p id="status" role="status"></p>
+    <ol id="stores"></ol>
+    <footer>Aisle data from the Kroger Products API. Not affiliated with Kroger.</footer>
+  </aside>
+
+  <main id="store">
+    <div id="empty">
+      <h2>Pick a store to map its aisles</h2>
+      <p>Enter a ZIP code, choose a store, and the app looks up where common groceries are shelved to build an aisle directory. Then search for anything to see which aisle it's in.</p>
+    </div>
+
+    <div id="storeView" hidden>
+      <header>
+        <div>
+          <h2 id="storeName"></h2>
+          <p id="storeAddr" class="sub"></p>
+        </div>
+        <form id="find">
+          <input id="term" type="search" placeholder="Where is… (e.g. tahini)" minlength="3" required>
+          <button type="submit">Find</button>
+          <button type="button" id="clear" hidden>Clear</button>
+        </form>
+      </header>
+
+      <div id="progressWrap" hidden><progress id="progress" value="0" max="1"></progress> <span id="progressText"></span></div>
+      <p id="findStatus" class="sub" role="status"></p>
+
+      <section>
+        <h3>Aisles</h3>
+        <div id="aisleGrid" class="grid"></div>
+      </section>
+      <section id="deptSection" hidden>
+        <h3>Departments &amp; other areas</h3>
+        <div id="deptGrid" class="grid"></div>
+      </section>
+      <p class="sub note">Aisles are shown in number order as a directory, not a to-scale floor plan. Contents come from where Kroger says sampled products are shelved, so an aisle may hold more than is listed.</p>
+
+      <section id="detail" hidden>
+        <h3 id="detailTitle"></h3>
+        <div id="detailBody"></div>
+      </section>
+    </div>
+  </main>
+  <script src="aisles.js"></script>
+</body>
+</html>
