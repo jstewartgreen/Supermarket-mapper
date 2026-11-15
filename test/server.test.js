@@ -86,3 +86,12 @@ test('static files: serves the app, nothing else', async () => {
   assert.equal((await fetch(t.base + '/..%2f..%2fetc/passwd')).status, 404);
   t.close();
 });
+
+test('CORS header is sent only when an allowed origin is configured', async () => {
+  const off = await setup();
+  assert.equal((await fetch(off.base + '/api/kroger/status')).headers.get('access-control-allow-origin'), null);
+  off.close();
+  const on = await setup({ clientId: 'id', clientSecret: 'secret', allowedOrigin: 'https://example.github.io' });
+  assert.equal((await fetch(on.base + '/api/kroger/status')).headers.get('access-control-allow-origin'), 'https://example.github.io');
+  on.close();
+});

@@ -28,8 +28,10 @@
   let hits = null;                // Set of productIds from the last "Where is" search, or null
   let selectedAisle = null;
 
+  const API_BASE = String(window.AISLES_API_BASE || '').replace(/\/+$/, '');
+
   async function api(path) {
-    const res = await fetch(path);
+    const res = await fetch(API_BASE + path);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw Object.assign(new Error(body.error || `Request failed (${res.status})`), { status: res.status });
     return body;
@@ -255,8 +257,16 @@
   };
 
   // ---------- init ----------
-  api('/api/kroger/status').then((s) => { if (!s.configured) showSetup(); })
-    .catch(() => setStatus('This page needs the app server: run "npm start" and open http://localhost:8000/aisles.html', true));
+  let backendUp = true;
+  api('/api/kroger/status').then((s) => { if (!s.configured) showSetup(); }).catch(() => {
+    backendUp = false;
+    $('findStores').querySelector('button').disabled = true;
+    $('status').innerHTML = `<div class="setup"><strong>The aisle mapper's server isn't reachable.</strong><br>` +
+      (API_BASE ? `Tried <code>${esc(API_BASE)}</code>. Check that it is running and allows this site (ALLOWED_ORIGIN).`
+        : /\.github\.io$/.test(location.hostname)
+          ? `GitHub Pages only hosts static files, so the <a href="index.html">store map</a> works here but this page needs <code>server.js</code> running somewhere to talk to Kroger. Deploy it to a Node host and put its URL in <code>config.js</code> (see README).`
+          : `Run <code>npm start</code> and open <code>http://localhost:8000/aisles.html</code>.`) + '</div>';
+  });
   const zip = new URLSearchParams(location.search).get('zip');
-  if (zip && /^\d{5}$/.test(zip)) { $('zip').value = zip; $('findStores').requestSubmit(); }
+  if (zip && /^\d{5}$/.test(zip)) { $('zip').value = zip; setTimeout(() => backendUp && $('findStores').requestSubmit(), 0); }
 })();

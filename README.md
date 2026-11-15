@@ -48,4 +48,11 @@ Enter a ZIP code and pick a store. The app runs about 80 common grocery searches
 
 `server.js` serves the pages and proxies three endpoints (`/api/kroger/status`, `/locations`, `/products`) to `api.kroger.com` using the OAuth client-credentials flow, so the secret stays on the server. It listens on `127.0.0.1` only; set `HOST`/`PORT` to change that.
 
+### GitHub Pages
+
+GitHub Pages serves static files only. The store map works there as is. The aisle mapper needs `server.js` running on a Node host (Render, Fly.io, Railway, a VPS, …):
+
+1. Deploy this repo there with start command `npm start` and environment variables `KROGER_CLIENT_ID`, `KROGER_CLIENT_SECRET`, `HOST=0.0.0.0` and `ALLOWED_ORIGIN=https://<user>.github.io`.
+2. Set `window.AISLES_API_BASE` in `config.js` to that server's URL and push.
+
 `npm test` runs the server tests against a local stand-in for the Kroger API (`test/fake-kroger.js`).

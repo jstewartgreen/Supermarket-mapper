@@ -12,7 +12,7 @@ const MIME = {
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon',
 };
-const STATIC_FILES = new Set(['index.html', 'app.js', 'style.css', 'aisles.html', 'aisles.js', 'aisles.css']);
+const STATIC_FILES = new Set(['index.html', 'app.js', 'style.css', 'aisles.html', 'aisles.js', 'aisles.css', 'config.js']);
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const CACHE_MAX = 5000;
 
@@ -20,7 +20,7 @@ class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
-function createApp({ clientId, clientSecret, apiBase = 'https://api.kroger.com', root = __dirname } = {}) {
+function createApp({ clientId, clientSecret, apiBase = 'https://api.kroger.com', root = __dirname, allowedOrigin = '' } = {}) {
   let token = null; // { value, expiresAt }
   let tokenPromise = null;
   const cache = new Map(); // url -> { at, body }
@@ -126,6 +126,8 @@ function createApp({ clientId, clientSecret, apiBase = 'https://api.kroger.com',
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
 
     if (url.pathname.startsWith('/api/')) {
+      // Lets a copy of the pages on another origin (e.g. GitHub Pages) call this server.
+      if (allowedOrigin) { res.setHeader('Access-Control-Allow-Origin', allowedOrigin); res.setHeader('Vary', 'Origin'); }
       try {
         const body = await api(url);
         res.writeHead(200, { 'Content-Type': MIME['.json'], 'Cache-Control': 'no-store' }).end(JSON.stringify(body));
@@ -157,6 +159,7 @@ if (require.main === module) {
     clientId: process.env.KROGER_CLIENT_ID,
     clientSecret: process.env.KROGER_CLIENT_SECRET,
     apiBase: process.env.KROGER_API_BASE || undefined,
+    allowedOrigin: process.env.ALLOWED_ORIGIN || '',
   });
   app.listen(port, host, () => {
     console.log(`Supermarket Mapper running at http://${host}:${port}`);
